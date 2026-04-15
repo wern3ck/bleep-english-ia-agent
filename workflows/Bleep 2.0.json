@@ -1,0 +1,605 @@
+{
+  "name": "Bleep 2.0",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -272,
+        -32
+      ],
+      "id": "0313477f-650f-48b4-a1d8-14bbfd887057",
+      "name": "Telegram Trigger",
+      "webhookId": "SEU_WEBHOOK_ID",
+      "credentials": {
+        "telegramApi": {
+          "id": "SUA_CREDENCIAL_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "You are Bleep English, an intelligent, cordial, and motivating English tutor. Your specialization lies in enhancing students' oral fluency and grammatical precision.\n\nYour task upon receiving a transcription is as follows:\n\n**Transcription:** Present the original text uttered by the student.\n\n**Analysis:** Should there be an evident word substitution or structural error, state naturally and entirely in English: \"You mispronounced [incorrect word] this way...\" or \"In this context, you used [word], but the ideal would be...\".\n\nBefore the **Correction**, you must introduce the phrase in English: \"The best way to say this is: [correct sentence]\".\n\n**Translation:** Translate the corrected sentence into Portuguese.\n\n**Feedback & Score:** Assign a score ranging from 0% to 100% and provide a brief, encouraging comment.\n\n**Style Rules:**\n\n*   Be direct and avoid extensive texts.\n*   Utilize emojis to maintain a light and engaging conversation.\n*   If the transcription contains only numbers or is unintelligible, kindly request the student to repeat it.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        704,
+        -48
+      ],
+      "id": "289de610-50aa-4959-b211-007735daa525",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        688,
+        176
+      ],
+      "id": "11595977-98ca-4568-8295-5430bfb7f76c",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "WXZ5vPNe0oWBAIvL",
+          "name": "Groq bleep english"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id.toString() }}",
+        "sessionTTL": 3600,
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        816,
+        224
+      ],
+      "id": "e77ca9e6-7314-431d-87aa-3eae98912f98",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "roQGHsHwz2XB72CA",
+          "name": "Redis bleep"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notExists",
+                      "singleValue": true
+                    },
+                    "id": "c3ab7a52-63c3-4055-be92-25fb1879c989"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6cc7d5c4-ad4c-4137-acac-3d13fa70ccf4",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Áudio "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        -32
+      ],
+      "id": "3fb61f2c-83db-48da-97b9-958f055ed641",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        176,
+        208
+      ],
+      "id": "b8323229-7381-4fd4-9c5e-c4651b51c0cb",
+      "name": "Get a file",
+      "webhookId": "c2fd7722-b339-44f7-8577-6ee64dbf45f4",
+      "credentials": {
+        "telegramApi": {
+          "id": "SEU_TELEGRAM_ID",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1632,
+        112
+      ],
+      "id": "3eafb5c4-7c42-44ec-9202-6b4c7d7a4449",
+      "name": "Send a text message",
+      "webhookId": "1c69c84f-1bfa-4e60-a051-3a56a8f7d308",
+      "credentials": {
+        "telegramApi": {
+          "id": "y9EhB0ipfq4fPEY1",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analise a transcrição abaixo:\n\n{{ $node[\"HTTP Request\"].json[\"text\"] }} ",
+        "options": {
+          "systemMessage": "You are Bleep English, a smart, friendly, and motivating English teacher. Your specialty is helping students improve their speaking and grammar.\nYour task when receiving a transcription:\nTranscription: Display the original text the student said.\nAnalysis: If there is a clear word swap or structural error, say naturally and entirely in English: \"You mispronounced [wrong word] this way...\" or \"In this context, you used [word], but the ideal would be...\".\nBefore the Correction you should say this phrase in English: \"The best way to say this is: [correct sentence]\".\nTranslation: Translate the corrected sentence into Portuguese.\nFeedback & Score: Give a score from 0% to 100% and a short, encouraging comment.\nStyle Rules:\n\nBe direct and don't write long texts.\nUse emojis to keep the conversation light.\nIf the transcription contains only numbers or doesn't make sense, kindly ask the student to repeat."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        720,
+        448
+      ],
+      "id": "42f485dd-ac2d-4701-ae50-41a118fd3e88",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        688,
+        656
+      ],
+      "id": "e65237e7-0886-435b-8bdf-19c5aa8b3dfd",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "SEU_GEMINI_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id.toString() }}",
+        "sessionTTL": 3600,
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        912,
+        656
+      ],
+      "id": "7ab9e9bb-1aef-4ef4-8b16-08a822d66b26",
+      "name": "Redis Chat Memory1",
+      "credentials": {
+        "redis": {
+          "id": "SEU_REDIS_ID",
+          "name": "Redis bleep"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "=file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "model",
+              "value": "whisper-large-v3"
+            },
+            {
+              "name": "language",
+              "value": "en"
+            },
+            {
+              "name": "prompt",
+              "value": "Bleep English"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        336,
+        512
+      ],
+      "id": "271718d2-3047-4da8-a6ae-7e3c2685d7d6",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "SEU_BEARER_AUTH_ID",
+          "name": "Bearer Auth account"
+        },
+        "httpHeaderAuth": {
+          "id": "SEU_HEADER_AUTH_ID",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "give me a second...",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        208
+      ],
+      "id": "499b3445-033e-49ce-9e38-44b36e2a86cd",
+      "name": "Send confirmation1",
+      "webhookId": "0c875611-3f68-4da9-9b6d-e6a0d3b4aae9",
+      "credentials": {
+        "telegramApi": {
+          "id": "y9EhB0ipfq4fPEY1",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const binaryData = items[0].binary.data;\nbinaryData.fileExtension = 'ogg';\nbinaryData.mimeType = 'audio/ogg';\nbinaryData.fileName = binaryData.fileName?.replace('.oga', '.ogg');\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        208
+      ],
+      "id": "c544e13d-ec17-41fb-923a-5c6e80590f7a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.voicerss.org/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "h1",
+              "value": "en-us"
+            },
+            {
+              "name": "src",
+              "value": "=The best way to say this is: {{ $('AI Agent1').item.json.output.split('The best way to say this is:')[1].split('Translation:')[0].trim().replace(/\\*\\*/g, '').replace(/\\n/g, ' ') }}"
+            },
+            {
+              "name": "c",
+              "value": "MP3"
+            },
+            {
+              "name": "f",
+              "value": "44khz_16bit_stereo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1088,
+        416
+      ],
+      "id": "854b0ead-eca9-4fcf-b909-53cf254cc8a1",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "SEU_QUERY_AUTH_ID",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {
+          "fileName": "Bleep_correction"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1504,
+        528
+      ],
+      "id": "5c52a12c-5b7d-4847-9574-7a13519acd96",
+      "name": "Send an audio file",
+      "webhookId": "51561e0e-d405-47a2-9833-8b24688bf06c",
+      "retryOnFail": false,
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "telegramApi": {
+          "id": "y9EhB0ipfq4fPEY1",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        528
+      ],
+      "id": "b4a3cdc9-6f24-4176-a952-2579a254e611",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send confirmation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send confirmation1": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send an audio file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an audio file": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "94a18f15-8d85-4c24-a1dd-63b7aa8507bb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "SEU_INSTANCE_ID"
+  },
+  "id": "zmayIf4t2H3zCmSo",
+  "tags": []
+}

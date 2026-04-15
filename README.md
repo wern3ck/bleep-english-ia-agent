@@ -18,7 +18,7 @@ Este é um agente de inteligência artificial sofisticado desenvolvido no **n8n*
 O fluxo de trabalho segue a lógica representada abaixo:
 
 <p align="center">
-  <img src="./workflow-completo.png" alt="Arquitetura do Workflow Bleep English" width="100%">
+  <img src="./workflow-completo-Bleep.png" alt="Arquitetura do Workflow Bleep English" width="100%">
 </p>
 
 1. **Entrada:** O usuário envia um texto ou áudio no Telegram.

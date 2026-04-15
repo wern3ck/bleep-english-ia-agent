@@ -3,7 +3,7 @@
 ![n8n](https://img.shields.io/badge/n8n-workflow-orange)
 ![Telegram](https://img.shields.io/badge/Telegram-Bot-blue)
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
-![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/lucas-werneck-713682363/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/lucas-werneck-713682363/)
 
 Este é um agente de inteligência artificial sofisticado desenvolvido no **n8n** para auxiliar no aprendizado de inglês via Telegram. O bot é capaz de processar mensagens de texto e áudio, oferecendo uma experiência de conversação fluida e inteligente.
 
